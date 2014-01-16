@@ -1,5 +1,6 @@
 package ru.idesade.gpstracker;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -26,9 +27,11 @@ public class GPSTrackerFragment extends Fragment implements View.OnClickListener
 				if (!CheckPlayServiceAvailable.isGooglePlayServicesAvailable(getActivity())) {
 					return;
 				}
+				getActivity().startService(new Intent(getActivity(), GPSTrackerService.class));
 				break;
 			}
 			case R.id.button_gps_tracker_stop: {
+				getActivity().stopService(new Intent(getActivity(), GPSTrackerService.class));
 				break;
 			}
 		}
