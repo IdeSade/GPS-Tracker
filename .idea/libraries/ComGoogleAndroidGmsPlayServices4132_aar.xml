@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="ComGoogleAndroidGmsPlayServices4132.aar">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/GPS Tracker/build/exploded-bundles/ComGoogleAndroidGmsPlayServices4132.aar/classes.jar!/" />
+      <root url="file://$PROJECT_DIR$/GPS Tracker/build/exploded-bundles/ComGoogleAndroidGmsPlayServices4132.aar/res" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="file://D:/Android/android-sdk/sources/android-19" />
+    </SOURCES>
+  </library>
+</component>
