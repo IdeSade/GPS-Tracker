@@ -7,7 +7,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+
 public class GPSTrackerFragment extends Fragment implements View.OnClickListener {
+
+	private GoogleMap mMap;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -18,6 +23,12 @@ public class GPSTrackerFragment extends Fragment implements View.OnClickListener
 		rootView.findViewById(R.id.button_gps_tracker_stop).setOnClickListener(this);
 
 		return rootView;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		setUpMapIfNeeded();
 	}
 
 	@Override
@@ -33,6 +44,18 @@ public class GPSTrackerFragment extends Fragment implements View.OnClickListener
 			case R.id.button_gps_tracker_stop: {
 				getActivity().stopService(new Intent(getActivity(), GPSTrackerService.class));
 				break;
+			}
+		}
+	}
+
+	// Helper methods
+
+	private void setUpMapIfNeeded() {
+		if (mMap == null) {
+			mMap = ((SupportMapFragment) getActivity().getSupportFragmentManager().findFragmentById(R.id.map))
+					.getMap();
+			if (mMap != null) {
+				mMap.setMyLocationEnabled(true);
 			}
 		}
 	}
