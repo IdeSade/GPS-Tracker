@@ -63,7 +63,7 @@ public class GPSTrack {
 	public synchronized File storeToExternalStorage(Context context) {
 		JSONObject json = toJSONObject();
 
-		File file = preparingFile(context);
+		File file = prepareFile(context);
 		if (file == null) {
 			return null;
 		}
@@ -79,19 +79,8 @@ public class GPSTrack {
 		return file;
 	}
 
-	public File preparingFile(Context context) {
-//		File dir = context.getFilesDir();
-		File dir = new File(Environment.getExternalStorageDirectory() + "/GPSTracker");
-
-		Boolean dirExists = dir.exists();
-		if (!dirExists) {
-			dirExists = dir.mkdirs();
-		}
-
-		if (!dirExists) {
-			return null;
-		}
-
+	private File prepareFile(Context context) {
+		File dir = GPSTrackerUtils.prepareGPSTrackerDir(context);
 		return new File(dir, StartTime + ".trc");
 	}
 }

@@ -2,6 +2,9 @@ package ru.idesade.gpstracker;
 
 import android.content.Context;
 import android.location.Location;
+import android.os.Environment;
+
+import java.io.File;
 
 public final class GPSTrackerUtils {
 
@@ -21,6 +24,22 @@ public final class GPSTrackerUtils {
 					currentLocation.getLongitude());
 		} else {
 			return EMPTY_STRING;
+		}
+	}
+
+	public static File prepareGPSTrackerDir(Context context) {
+//		File dir = context.getFilesDir();
+		File dir = new File(Environment.getExternalStorageDirectory() + "/GPSTracker");
+
+		Boolean dirExists = dir.exists();
+		if (!dirExists) {
+			dirExists = dir.mkdirs();
+		}
+
+		if (!dirExists) {
+			return null;
+		} else {
+			return dir;
 		}
 	}
 }
