@@ -1,7 +1,6 @@
 package ru.idesade.gpstracker;
 
 import android.content.Context;
-import android.location.Location;
 import android.os.Environment;
 
 import java.io.File;
@@ -14,20 +13,7 @@ public final class GPSTrackerUtils {
 
 	public static final int SMALLEST_DISPLACEMENT_METER = 10;
 
-	public static final String EMPTY_STRING = new String();
-
-	public static String getLatLng(Context context, Location currentLocation) {
-		if (currentLocation != null) {
-			return context.getString(
-					R.string.latitude_longitude,
-					currentLocation.getLatitude(),
-					currentLocation.getLongitude());
-		} else {
-			return EMPTY_STRING;
-		}
-	}
-
-	public static File prepareGPSTrackerDir(Context context) {
+	public static File getGPSTrackerDir(Context context) {
 //		File dir = context.getFilesDir();
 		File dir = new File(Environment.getExternalStorageDirectory() + "/GPSTracker");
 

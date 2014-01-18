@@ -43,6 +43,7 @@ public class GPSTrackerService extends Service implements
 		Log.d(TAG, "onStartCommand()");
 		if (mTrack == null) {
 			mTrack = new GPSTrack();
+			mTrack.setStartTime();
 			mLocationClient.connect();
 		}
 		return super.onStartCommand(intent, flags, startId);
@@ -53,7 +54,8 @@ public class GPSTrackerService extends Service implements
 		Log.d(TAG, "onDestroy()");
 		mLocationClient.disconnect();
 		if (mTrack != null) {
-			File file = mTrack.storeToExternalStorage(this);
+			mTrack.setFinishTime();
+			File file = mTrack.storeToFile(this);
 			if (file != null) {
 				Log.d(TAG, "Track store to file " + file.getAbsolutePath());
 			} else {

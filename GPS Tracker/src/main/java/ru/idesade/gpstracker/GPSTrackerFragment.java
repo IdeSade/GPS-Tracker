@@ -1,6 +1,7 @@
 package ru.idesade.gpstracker;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -19,6 +20,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 public class GPSTrackerFragment extends Fragment implements
 		View.OnClickListener,
@@ -47,6 +49,7 @@ public class GPSTrackerFragment extends Fragment implements
 
 		rootView.findViewById(R.id.button_gps_tracker_start).setOnClickListener(this);
 		rootView.findViewById(R.id.button_gps_tracker_stop).setOnClickListener(this);
+		rootView.findViewById(R.id.button_gps_tracker_load_track).setOnClickListener(this);
 
 		return rootView;
 	}
@@ -79,6 +82,11 @@ public class GPSTrackerFragment extends Fragment implements
 			}
 			case R.id.button_gps_tracker_stop: {
 				getActivity().stopService(new Intent(getActivity(), GPSTrackerService.class));
+				break;
+			}
+			case R.id.button_gps_tracker_load_track: {
+				GPSTrack loadTrack = loadTrackFromFile(1390067771713L);
+				showTrack(loadTrack);
 				break;
 			}
 		}
@@ -136,6 +144,22 @@ public class GPSTrackerFragment extends Fragment implements
 					getActivity().getApplicationContext(),
 					this,  // ConnectionCallbacks
 					this); // OnConnectionFailedListener
+		}
+	}
+
+	private GPSTrack loadTrackFromFile(final long startTime) {
+		GPSTrack track = new GPSTrack();
+		track.loadFromFile(getActivity(), startTime);
+		return track;
+	}
+
+	private void showTrack(final GPSTrack track) {
+	    if (mMap != null && track != null) {
+			mMap.clear();
+			mMap.addPolyline(new PolylineOptions()
+					.addAll(track.getLatLng())
+					.width(5)
+					.color(Color.RED));
 		}
 	}
 }

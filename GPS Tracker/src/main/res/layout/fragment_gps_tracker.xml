@@ -31,4 +31,13 @@
         android:layout_marginTop="60dp"
         android:layout_marginRight="20dp"/>
 
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/button_gps_tracker_load_track"
+        android:id="@+id/button_gps_tracker_load_track"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="60dp"
+        android:layout_marginLeft="20dp"/>
+
 </RelativeLayout>
