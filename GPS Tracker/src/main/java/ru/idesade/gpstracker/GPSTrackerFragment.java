@@ -1,5 +1,7 @@
 package ru.idesade.gpstracker;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
@@ -85,8 +87,7 @@ public class GPSTrackerFragment extends Fragment implements
 				break;
 			}
 			case R.id.button_gps_tracker_load_track: {
-				GPSTrack loadTrack = loadTrackFromFile(1390067771713L);
-				showTrack(loadTrack);
+				selectStoreTrack();
 				break;
 			}
 		}
@@ -145,6 +146,28 @@ public class GPSTrackerFragment extends Fragment implements
 					this,  // ConnectionCallbacks
 					this); // OnConnectionFailedListener
 		}
+	}
+
+	private void selectStoreTrack() {
+		final String[] files = GPSTrackerUtils.getGPSTrackerDir(getActivity()).list();
+		new AlertDialog.Builder(getActivity())
+				.setTitle("Select store track")
+				.setSingleChoiceItems(files, files.length - 1, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String fileName = files[which];
+						int idx = fileName.lastIndexOf(".");
+
+						long startTime = Long.parseLong(fileName.substring(0, idx));
+
+						GPSTrack loadTrack = loadTrackFromFile(startTime);
+						showTrack(loadTrack);
+
+						dialog.dismiss();
+					}
+				})
+				.create()
+				.show();
 	}
 
 	private GPSTrack loadTrackFromFile(final long startTime) {
