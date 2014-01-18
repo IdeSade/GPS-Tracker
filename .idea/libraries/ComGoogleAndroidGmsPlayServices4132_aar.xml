@@ -5,8 +5,6 @@
       <root url="file://$PROJECT_DIR$/GPS Tracker/build/exploded-bundles/ComGoogleAndroidGmsPlayServices4132.aar/res" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="file://D:/Android/android-sdk/sources/android-19" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>

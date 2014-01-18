@@ -20,38 +20,40 @@ public class GPSTrackerService extends Service implements
 
 	private final String TAG = "GPSTrackerService";
 
-	private LocationRequest mLocationRequest;
+	private final LocationRequest REQUEST = LocationRequest.create()
+			.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+			.setInterval(GPSTrackerUtils.UPDATE_INTERVAL_IN_MILLISECONDS)
+			.setSmallestDisplacement(GPSTrackerUtils.SMALLEST_DISPLACEMENT_METER);
+
 	private LocationClient mLocationClient;
+
+	private GPSTrack mTrack;
 
 	@Override
 	public void onCreate() {
 		Log.d(TAG, "onCreate()");
-
-		mLocationRequest = LocationRequest.create();
-		mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-		mLocationRequest.setInterval(GPSTrackerUtils.UPDATE_INTERVAL_IN_MILLISECONDS);
-		mLocationRequest.setSmallestDisplacement(GPSTrackerUtils.SMALLEST_DISPLACEMENT_METER);
-
 		mLocationClient = new LocationClient(this, this, this);
-
 		super.onCreate();
 	}
 
 	@Override
 	public int onStartCommand(final Intent intent, final int flags, final int startId) {
 		Log.d(TAG, "onStartCommand()");
-
-		mLocationClient.connect();
-
+		if (mTrack == null) {
+			mTrack = new GPSTrack();
+			mLocationClient.connect();
+		}
 		return super.onStartCommand(intent, flags, startId);
 	}
 
 	@Override
 	public void onDestroy() {
 		Log.d(TAG, "onDestroy()");
-
 		mLocationClient.disconnect();
-
+		if (mTrack != null) {
+			String fileName = mTrack.storeToExternalStorage(this);
+			Log.d(TAG, "Track store to file " + fileName);
+		}
 		super.onDestroy();
 	}
 
@@ -65,7 +67,9 @@ public class GPSTrackerService extends Service implements
 
 	@Override
 	public void onLocationChanged(final Location location) {
-		Log.d(TAG, "onLocationChanged(): " + location);
+		if (mTrack != null) {
+			mTrack.addLocation(location);
+		}
 	}
 
 	// GooglePlayServicesClient.ConnectionCallbacks
@@ -93,7 +97,7 @@ public class GPSTrackerService extends Service implements
 
 	private void startPeriodicUpdates() {
 		Log.d(TAG, "Start periodic updates...");
-		mLocationClient.requestLocationUpdates(mLocationRequest, this);
+		mLocationClient.requestLocationUpdates(REQUEST, GPSTrackerService.this);
 	}
 
 	private void stopPeriodicUpdates() {
