@@ -2,8 +2,6 @@ package ru.idesade.gpstracker;
 
 import android.content.Context;
 import android.location.Location;
-import android.os.Environment;
-import android.os.Parcel;
 
 import org.json.JSONArray;
 import org.json.JSONException;
