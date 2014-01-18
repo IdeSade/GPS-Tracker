@@ -60,7 +60,7 @@ public class GPSTrack {
 		return jsonTrack;
 	}
 
-	public synchronized String storeToExternalStorage(Context context) {
+	public synchronized File storeToExternalStorage(Context context) {
 		JSONObject json = toJSONObject();
 
 		File file = preparingFile(context);
@@ -76,7 +76,7 @@ public class GPSTrack {
 			e.printStackTrace();
 		}
 
-		return file.getAbsolutePath();
+		return file;
 	}
 
 	public File preparingFile(Context context) {

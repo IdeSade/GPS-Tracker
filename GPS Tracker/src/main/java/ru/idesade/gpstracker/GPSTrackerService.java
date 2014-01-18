@@ -13,6 +13,8 @@ import com.google.android.gms.location.LocationClient;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 
+import java.io.File;
+
 public class GPSTrackerService extends Service implements
 		LocationListener,
 		GooglePlayServicesClient.ConnectionCallbacks,
@@ -51,8 +53,12 @@ public class GPSTrackerService extends Service implements
 		Log.d(TAG, "onDestroy()");
 		mLocationClient.disconnect();
 		if (mTrack != null) {
-			String fileName = mTrack.storeToExternalStorage(this);
-			Log.d(TAG, "Track store to file " + fileName);
+			File file = mTrack.storeToExternalStorage(this);
+			if (file != null) {
+				Log.d(TAG, "Track store to file " + file.getAbsolutePath());
+			} else {
+				Log.d(TAG, "Track not store");
+			}
 		}
 		super.onDestroy();
 	}
