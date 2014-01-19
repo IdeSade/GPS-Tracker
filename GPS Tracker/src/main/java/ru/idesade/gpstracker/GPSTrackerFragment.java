@@ -24,6 +24,9 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.PolylineOptions;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 public class GPSTrackerFragment extends Fragment implements
 		View.OnClickListener,
 		LocationListener,
@@ -34,10 +37,11 @@ public class GPSTrackerFragment extends Fragment implements
 
 	private static final LocationRequest REQUEST = LocationRequest.create()
 			.setPriority(LocationRequest.PRIORITY_NO_POWER);
-
 	private LocationClient mLocationClient;
 
 	private GoogleMap mMap;
+
+	private int showedTrackIndex;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -150,18 +154,22 @@ public class GPSTrackerFragment extends Fragment implements
 
 	private void selectStoreTrack() {
 		final String[] files = GPSTrackerUtils.getGPSTrackerDir(getActivity()).list();
+		final String[] tracks = new String[files.length];
+		for (int i = 0; i < files.length; i++) {
+			int idx = files[i].lastIndexOf(".");
+			Date date = new Date(Long.parseLong(files[i].substring(0, idx)));
+			tracks[i] = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(date);
+		}
+
 		new AlertDialog.Builder(getActivity())
 				.setTitle("Select store track")
-				.setSingleChoiceItems(files, files.length - 1, new DialogInterface.OnClickListener() {
+				.setSingleChoiceItems(tracks, showedTrackIndex, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						String fileName = files[which];
-						int idx = fileName.lastIndexOf(".");
-
-						long startTime = Long.parseLong(fileName.substring(0, idx));
-
-						GPSTrack loadTrack = loadTrackFromFile(startTime);
+						GPSTrack loadTrack = loadTrackFromFile(files[which]);
 						showTrack(loadTrack);
+
+						showedTrackIndex = which;
 
 						dialog.dismiss();
 					}
@@ -170,9 +178,9 @@ public class GPSTrackerFragment extends Fragment implements
 				.show();
 	}
 
-	private GPSTrack loadTrackFromFile(final long startTime) {
+	private GPSTrack loadTrackFromFile(final String fileName) {
 		GPSTrack track = new GPSTrack();
-		track.loadFromFile(getActivity(), startTime);
+		track.loadFromFile(getActivity(), fileName);
 		return track;
 	}
 

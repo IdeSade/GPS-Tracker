@@ -141,7 +141,7 @@ public class GPSTrack {
 	}
 
 	public File storeToFile(Context context) {
-		File file = getFile(context, StartTime);
+		File file = getFileByStartTime(context, StartTime);
 		if (file == null) {
 			return null;
 		}
@@ -160,8 +160,8 @@ public class GPSTrack {
 		return file;
 	}
 
-	public boolean loadFromFile(Context context, long StartTime) {
-		File file = getFile(context, StartTime);
+	public boolean loadFromFile(Context context, String fileName) {
+		File file = getFile(context, fileName);
 		if (file == null) {
 			return false;
 		}
@@ -189,8 +189,13 @@ public class GPSTrack {
 		return fromJSONString(loadString);
 	}
 
-	private File getFile(Context context, long startTime) {
+	private File getFileByStartTime(Context context, long startTime) {
 		File dir = GPSTrackerUtils.getGPSTrackerDir(context);
 		return new File(dir, startTime + ".trc");
+	}
+
+	private File getFile(final Context context, final String fileName) {
+		File dir = GPSTrackerUtils.getGPSTrackerDir(context);
+		return new File(dir, fileName);
 	}
 }
