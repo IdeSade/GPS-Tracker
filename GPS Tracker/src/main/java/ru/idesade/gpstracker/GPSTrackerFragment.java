@@ -1,9 +1,12 @@
 package ru.idesade.gpstracker;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.location.Location;
@@ -15,6 +18,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -49,15 +53,22 @@ public class GPSTrackerFragment extends Fragment implements
 
 	private Button mStartTracking;
 	private Button mStopTracking;
+	private TextView mTrackInfo;
 
 	private Intent serviceIntent;
 	private ServiceConnection serviceConnection;
+	private BroadcastReceiver broadcastReceiver;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+
 		serviceIntent = new Intent(getActivity(), GPSTrackerService.class);
 		serviceConnection = new GPSTrackServiceConnection();
+
+		broadcastReceiver = new GPSTrackServiceBroadcastReceiver();
+		IntentFilter intentFilter = new IntentFilter(GPSTrackerUtils.BROADCAST_ACTION);
+		getActivity().registerReceiver(broadcastReceiver, intentFilter);
 	}
 
 	@Override
@@ -71,6 +82,9 @@ public class GPSTrackerFragment extends Fragment implements
 		mStopTracking = (Button) rootView.findViewById(R.id.button_gps_tracker_stop);
 		mStopTracking.setOnClickListener(this);
 		mStopTracking.setEnabled(false);
+
+		mTrackInfo = (TextView) rootView.findViewById(R.id.text_gps_tracker_track_info);
+		mTrackInfo.setVisibility(View.GONE);
 
 		rootView.findViewById(R.id.button_gps_tracker_load_track).setOnClickListener(this);
 
@@ -106,6 +120,12 @@ public class GPSTrackerFragment extends Fragment implements
 	}
 
 	@Override
+	public void onDestroy() {
+		getActivity().unregisterReceiver(broadcastReceiver);
+		super.onDestroy();
+	}
+
+	@Override
 	public void onClick(final View v) {
 		switch (v.getId()) {
 			case R.id.button_gps_tracker_start: {
@@ -113,10 +133,12 @@ public class GPSTrackerFragment extends Fragment implements
 					return;
 				}
 				getActivity().startService(serviceIntent);
+				getActivity().bindService(serviceIntent, serviceConnection, 0);
 				break;
 			}
 			case R.id.button_gps_tracker_stop: {
 				getActivity().stopService(serviceIntent);
+				mTrackInfo.setVisibility(View.GONE);
 				break;
 			}
 			case R.id.button_gps_tracker_load_track: {
@@ -175,6 +197,20 @@ public class GPSTrackerFragment extends Fragment implements
 			Log.d(TAG, "onServiceDisconnected(): " + name);
 			mStartTracking.setEnabled(true);
 			mStopTracking.setEnabled(false);
+		}
+	}
+
+	// Broadcast receiver
+
+	private class GPSTrackServiceBroadcastReceiver extends BroadcastReceiver {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			GPSTrack track = intent.getParcelableExtra(GPSTrackerUtils.PARAM_TRACK);
+			if (track != null) {
+				mTrackInfo.setVisibility(View.VISIBLE);
+				mTrackInfo.setText(track.toString());
+				showTrack(track);
+			}
 		}
 	}
 

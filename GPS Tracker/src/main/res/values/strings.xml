@@ -10,6 +10,8 @@
 	<string name="button_gps_tracker_stop">Stop tracking</string>
     <string name="button_gps_tracker_load_track">Load track</string>
 
+    <string name="text_gps_tracker_track_info">Track info</string>
+
 	<string name="latitude_longitude">%1$.8f, %2$.8f</string>
 
 </resources>

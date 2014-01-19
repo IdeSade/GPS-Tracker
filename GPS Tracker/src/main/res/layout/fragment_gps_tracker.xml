@@ -40,4 +40,15 @@
         android:layout_marginBottom="60dp"
         android:layout_marginLeft="20dp"/>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/text_gps_tracker_track_info"
+        android:id="@+id/text_gps_tracker_track_info"
+        android:layout_below="@+id/button_gps_tracker_start"
+        android:layout_alignLeft="@+id/button_gps_tracker_start"
+        android:layout_alignStart="@+id/button_gps_tracker_start"
+        android:layout_marginTop="20dp"/>
+
 </RelativeLayout>

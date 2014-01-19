@@ -17,9 +17,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 public class GPSTrack implements Parcelable {
@@ -197,6 +198,27 @@ public class GPSTrack implements Parcelable {
 		return fromJSONString(loadString);
 	}
 
+	@Override
+	public String toString() {
+		String extraInfo = "";
+
+		if (LocationList.size() > 0) {
+			Location lastLocation = LocationList.get(LocationList.size() - 1);
+
+			Date date = new Date(lastLocation.getTime());
+			String time = new SimpleDateFormat("yyyy.MM.dd HH:mm:ss").format(date);
+
+			extraInfo = "Time: " + time + "\n"
+					+ "Lat: " + lastLocation.getLatitude() + "\n"
+					+ "Lng: " + lastLocation.getLongitude() + "\n"
+					+ "Alt: " + lastLocation.getAltitude() + "\n"
+					+ "Acc: " + lastLocation.getAccuracy() + "\n"
+					+ "Spd: " + lastLocation.getSpeed() + "\n";
+		}
+
+		return "GPSTrack:\n" + extraInfo;
+	}
+
 	// Helper methods
 
 	private File getFileByStartTime(Context context, long startTime) {
@@ -214,10 +236,7 @@ public class GPSTrack implements Parcelable {
 	public GPSTrack(Parcel in) {
 		StartTime = in.readLong();
 		FinishTime = in.readLong();
-		Location[] locations = (Location[]) in.readParcelableArray(Location.class.getClassLoader());
-		if (locations != null) {
-			Collections.addAll(LocationList, locations);
-		}
+		in.readList(LocationList, Location.class.getClassLoader());
 	}
 
 	@Override
@@ -229,7 +248,7 @@ public class GPSTrack implements Parcelable {
 	public void writeToParcel(Parcel dest, int flags) {
 		dest.writeLong(StartTime);
 		dest.writeLong(FinishTime);
-		dest.writeParcelableArray(LocationList.toArray(new Location[LocationList.size()]), 0);
+		dest.writeList(LocationList);
 	}
 
 	public static final Creator<GPSTrack> CREATOR = new Creator<GPSTrack>() {
