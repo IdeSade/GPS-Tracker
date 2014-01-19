@@ -213,7 +213,7 @@ public class GPSTrack implements Parcelable {
 					+ "Lng: " + lastLocation.getLongitude() + "\n"
 					+ "Alt: " + lastLocation.getAltitude() + "\n"
 					+ "Acc: " + lastLocation.getAccuracy() + "\n"
-					+ "Spd: " + lastLocation.getSpeed() + "\n";
+					+ "Spd: " + lastLocation.getSpeed() / 1000.0 * 3600.0 + "\n";
 		}
 
 		return "GPSTrack:\n" + extraInfo;

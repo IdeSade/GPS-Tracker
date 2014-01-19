@@ -1,12 +1,9 @@
 package ru.idesade.gpstracker;
 
 import android.app.AlertDialog;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.location.Location;
@@ -35,11 +32,16 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import ru.idesade.gpstracker.Service.GPSTrackChangeListener;
+import ru.idesade.gpstracker.Service.GPSTrackerService;
+import ru.idesade.gpstracker.Service.GPSTrackerServiceBinder;
+
 public class GPSTrackerFragment extends Fragment implements
 		View.OnClickListener,
 		LocationListener,
 		GooglePlayServicesClient.ConnectionCallbacks,
-		GooglePlayServicesClient.OnConnectionFailedListener {
+		GooglePlayServicesClient.OnConnectionFailedListener,
+		GPSTrackChangeListener {
 
 	private final String TAG = "GPSTrackerFragment";
 
@@ -57,22 +59,22 @@ public class GPSTrackerFragment extends Fragment implements
 
 	private Intent serviceIntent;
 	private ServiceConnection serviceConnection;
-	private BroadcastReceiver broadcastReceiver;
+	private GPSTrackerService mGpsTrackerService;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+		Log.d(TAG, "onCreate()");
+
 		super.onCreate(savedInstanceState);
 
 		serviceIntent = new Intent(getActivity(), GPSTrackerService.class);
 		serviceConnection = new GPSTrackServiceConnection();
-
-		broadcastReceiver = new GPSTrackServiceBroadcastReceiver();
-		IntentFilter intentFilter = new IntentFilter(GPSTrackerUtils.BROADCAST_ACTION);
-		getActivity().registerReceiver(broadcastReceiver, intentFilter);
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		Log.d(TAG, "onCreateView()");
+
 		View rootView = inflater.inflate(R.layout.fragment_gps_tracker, container, false);
 		assert rootView != null;
 
@@ -93,21 +95,28 @@ public class GPSTrackerFragment extends Fragment implements
 
 	@Override
 	public void onStart() {
+		Log.d(TAG, "onStart()");
 		super.onStart();
+
 		getActivity().bindService(serviceIntent, serviceConnection, 0);
 	}
 
 	@Override
 	public void onResume() {
+		Log.d(TAG, "onResume()");
 		super.onResume();
+
 		setUpMapIfNeeded();
 		setUpLocationClientIfNeeded();
+
 		mLocationClient.connect();
 	}
 
 	@Override
 	public void onPause() {
+		Log.d(TAG, "onPause()");
 		super.onPause();
+
 		if (mLocationClient != null) {
 			mLocationClient.disconnect();
 		}
@@ -115,13 +124,17 @@ public class GPSTrackerFragment extends Fragment implements
 
 	@Override
 	public void onStop() {
+		Log.d(TAG, "onStop()");
 		super.onStop();
+
 		getActivity().unbindService(serviceConnection);
+
+		clearGpsTrackerService();
 	}
 
 	@Override
 	public void onDestroy() {
-		getActivity().unregisterReceiver(broadcastReceiver);
+		Log.d(TAG, "onDestroy()");
 		super.onDestroy();
 	}
 
@@ -188,29 +201,33 @@ public class GPSTrackerFragment extends Fragment implements
 		@Override
 		public void onServiceConnected(ComponentName name, IBinder service) {
 			Log.d(TAG, "onServiceConnected(): " + name);
+
 			mStartTracking.setEnabled(false);
 			mStopTracking.setEnabled(true);
+
+			mGpsTrackerService = ((GPSTrackerServiceBinder) service).getService();
+			mGpsTrackerService.setGpsTrackChangeListener(GPSTrackerFragment.this);
 		}
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
 			Log.d(TAG, "onServiceDisconnected(): " + name);
+
 			mStartTracking.setEnabled(true);
 			mStopTracking.setEnabled(false);
+
+			clearGpsTrackerService();
 		}
 	}
 
-	// Broadcast receiver
+	// GPSTrackChangeListener
 
-	private class GPSTrackServiceBroadcastReceiver extends BroadcastReceiver {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			GPSTrack track = intent.getParcelableExtra(GPSTrackerUtils.PARAM_TRACK);
-			if (track != null) {
-				mTrackInfo.setVisibility(View.VISIBLE);
-				mTrackInfo.setText(track.toString());
-				showTrack(track);
-			}
+	@Override
+	public void onTrackChange(GPSTrack track) {
+		if (track != null) {
+			mTrackInfo.setVisibility(View.VISIBLE);
+			mTrackInfo.setText(track.toString());
+			showTrack(track);
 		}
 	}
 
@@ -268,12 +285,19 @@ public class GPSTrackerFragment extends Fragment implements
 	}
 
 	private void showTrack(final GPSTrack track) {
-	    if (mMap != null && track != null) {
+		if (mMap != null && track != null) {
 			mMap.clear();
 			mMap.addPolyline(new PolylineOptions()
 					.addAll(track.getLatLng())
 					.width(5)
 					.color(Color.RED));
+		}
+	}
+
+	private void clearGpsTrackerService() {
+		if (mGpsTrackerService != null) {
+			mGpsTrackerService.clearGpsTrackChangeListener();
+			mGpsTrackerService = null;
 		}
 	}
 }

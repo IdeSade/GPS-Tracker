@@ -1,9 +1,8 @@
-package ru.idesade.gpstracker;
+package ru.idesade.gpstracker.Service;
 
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -15,6 +14,9 @@ import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 
 import java.io.File;
+
+import ru.idesade.gpstracker.GPSTrack;
+import ru.idesade.gpstracker.GPSTrackerUtils;
 
 public class GPSTrackerService extends Service implements
 		LocationListener,
@@ -32,7 +34,9 @@ public class GPSTrackerService extends Service implements
 
 	private GPSTrack mTrack;
 
-	private boolean bindActivity;
+	private GPSTrackerServiceBinder mBinder = new GPSTrackerServiceBinder(this);
+
+	private GPSTrackChangeListener mGpsTrackChangeListener;
 
 	@Override
 	public void onCreate() {
@@ -71,22 +75,22 @@ public class GPSTrackerService extends Service implements
 	@Override
 	public IBinder onBind(final Intent intent) {
 		Log.d(TAG, "onBind()");
-		bindActivity = true;
-		return new Binder();
+		return mBinder;
 	}
 
-	@Override
-	public void onRebind(Intent intent) {
-		Log.d(TAG, "onRebind()");
-		bindActivity = true;
-		super.onRebind(intent);
+	public void setGpsTrackChangeListener(GPSTrackChangeListener listener) {
+		mGpsTrackChangeListener = listener;
+		doChangeGpsTrack();
 	}
 
-	@Override
-	public boolean onUnbind(Intent intent) {
-		Log.d(TAG, "onUnbind()");
-		bindActivity = false;
-		return super.onUnbind(intent);
+	public void clearGpsTrackChangeListener() {
+		mGpsTrackChangeListener = null;
+	}
+
+	public void doChangeGpsTrack() {
+		if (mGpsTrackChangeListener != null && mTrack != null) {
+			mGpsTrackChangeListener.onTrackChange(mTrack);
+		}
 	}
 
 	// LocationListener
@@ -95,11 +99,7 @@ public class GPSTrackerService extends Service implements
 	public void onLocationChanged(final Location location) {
 		if (mTrack != null) {
 			mTrack.addLocation(location);
-			if (bindActivity) {
-				Intent intent = new Intent(GPSTrackerUtils.BROADCAST_ACTION);
-				intent.putExtra(GPSTrackerUtils.PARAM_TRACK, mTrack);
-				sendBroadcast(intent);
-			}
+			doChangeGpsTrack();
 		}
 	}
 
@@ -129,6 +129,7 @@ public class GPSTrackerService extends Service implements
 	private void startPeriodicUpdates() {
 		Log.d(TAG, "Start periodic updates...");
 		mLocationClient.requestLocationUpdates(REQUEST, GPSTrackerService.this);
+		doChangeGpsTrack();
 	}
 
 	private void stopPeriodicUpdates() {
