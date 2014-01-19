@@ -32,6 +32,8 @@ public class GPSTrackerService extends Service implements
 
 	private GPSTrack mTrack;
 
+	private boolean bindActivity;
+
 	@Override
 	public void onCreate() {
 		Log.d(TAG, "onCreate()");
@@ -69,7 +71,22 @@ public class GPSTrackerService extends Service implements
 	@Override
 	public IBinder onBind(final Intent intent) {
 		Log.d(TAG, "onBind()");
+		bindActivity = true;
 		return new Binder();
+	}
+
+	@Override
+	public void onRebind(Intent intent) {
+		Log.d(TAG, "onRebind()");
+		bindActivity = true;
+		super.onRebind(intent);
+	}
+
+	@Override
+	public boolean onUnbind(Intent intent) {
+		Log.d(TAG, "onUnbind()");
+		bindActivity = false;
+		return super.onUnbind(intent);
 	}
 
 	// LocationListener
@@ -78,9 +95,11 @@ public class GPSTrackerService extends Service implements
 	public void onLocationChanged(final Location location) {
 		if (mTrack != null) {
 			mTrack.addLocation(location);
-			Intent intent = new Intent(GPSTrackerUtils.BROADCAST_ACTION);
-			intent.putExtra(GPSTrackerUtils.PARAM_TRACK, mTrack);
-			sendBroadcast(intent);
+			if (bindActivity) {
+				Intent intent = new Intent(GPSTrackerUtils.BROADCAST_ACTION);
+				intent.putExtra(GPSTrackerUtils.PARAM_TRACK, mTrack);
+				sendBroadcast(intent);
+			}
 		}
 	}
 
