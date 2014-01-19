@@ -32,6 +32,7 @@ public class GPSTrack {
 	private static String JSON_LOCATION_LONGITUDE	= "Lng";
 	private static String JSON_LOCATION_ALTITUDE 	= "Alt";
 	private static String JSON_LOCATION_ACCURACY 	= "Acc";
+	private static String JSON_LOCATION_SPEED		= "Spd";
 
 	public long StartTime;
 	public long FinishTime;
@@ -90,6 +91,9 @@ public class GPSTrack {
 				if (location.hasAccuracy()) {
 					jsonLocation.put(JSON_LOCATION_ACCURACY, location.getAccuracy());
 				}
+				if (location.hasSpeed()) {
+					jsonLocation.put(JSON_LOCATION_SPEED, location.getSpeed());
+				}
 
 				jsonLocations.put(jsonLocation);
 			}
@@ -125,6 +129,7 @@ public class GPSTrack {
 				location.setLongitude(jsonLocation.getDouble(JSON_LOCATION_LONGITUDE));
 				location.setAltitude(jsonLocation.optDouble(JSON_LOCATION_ALTITUDE, 0));
 				location.setAccuracy((float) jsonLocation.optDouble(JSON_LOCATION_ACCURACY, 0));
+				location.setSpeed((float) jsonLocation.optDouble(JSON_LOCATION_SPEED, 0));
 
 				LocationList.add(location);
 			}
