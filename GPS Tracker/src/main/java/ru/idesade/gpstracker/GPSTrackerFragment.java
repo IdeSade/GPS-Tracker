@@ -1,16 +1,20 @@
 package ru.idesade.gpstracker;
 
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesClient;
@@ -43,9 +47,17 @@ public class GPSTrackerFragment extends Fragment implements
 
 	private int showedTrackIndex;
 
+	private Button mStartTracking;
+	private Button mStopTracking;
+
+	private Intent serviceIntent;
+	private ServiceConnection serviceConnection;
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		serviceIntent = new Intent(getActivity(), GPSTrackerService.class);
+		serviceConnection = new GPSTrackServiceConnection();
 	}
 
 	@Override
@@ -53,11 +65,22 @@ public class GPSTrackerFragment extends Fragment implements
 		View rootView = inflater.inflate(R.layout.fragment_gps_tracker, container, false);
 		assert rootView != null;
 
-		rootView.findViewById(R.id.button_gps_tracker_start).setOnClickListener(this);
-		rootView.findViewById(R.id.button_gps_tracker_stop).setOnClickListener(this);
+		mStartTracking = (Button) rootView.findViewById(R.id.button_gps_tracker_start);
+		mStartTracking.setOnClickListener(this);
+		mStartTracking.setEnabled(true);
+		mStopTracking = (Button) rootView.findViewById(R.id.button_gps_tracker_stop);
+		mStopTracking.setOnClickListener(this);
+		mStopTracking.setEnabled(false);
+
 		rootView.findViewById(R.id.button_gps_tracker_load_track).setOnClickListener(this);
 
 		return rootView;
+	}
+
+	@Override
+	public void onStart() {
+		super.onStart();
+		getActivity().bindService(serviceIntent, serviceConnection, 0);
 	}
 
 	@Override
@@ -77,17 +100,23 @@ public class GPSTrackerFragment extends Fragment implements
 	}
 
 	@Override
+	public void onStop() {
+		super.onStop();
+		getActivity().unbindService(serviceConnection);
+	}
+
+	@Override
 	public void onClick(final View v) {
 		switch (v.getId()) {
 			case R.id.button_gps_tracker_start: {
 				if (!CheckPlayServiceAvailable.isGooglePlayServicesAvailable(getActivity())) {
 					return;
 				}
-				getActivity().startService(new Intent(getActivity(), GPSTrackerService.class));
+				getActivity().startService(serviceIntent);
 				break;
 			}
 			case R.id.button_gps_tracker_stop: {
-				getActivity().stopService(new Intent(getActivity(), GPSTrackerService.class));
+				getActivity().stopService(serviceIntent);
 				break;
 			}
 			case R.id.button_gps_tracker_load_track: {
@@ -129,6 +158,24 @@ public class GPSTrackerFragment extends Fragment implements
 	@Override
 	public void onConnectionFailed(final ConnectionResult connectionResult) {
 		Log.d(TAG, "onConnectionFailed()");
+	}
+
+	// Service connection
+
+	private class GPSTrackServiceConnection implements ServiceConnection {
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			Log.d(TAG, "onServiceConnected(): " + name);
+			mStartTracking.setEnabled(false);
+			mStopTracking.setEnabled(true);
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			Log.d(TAG, "onServiceDisconnected(): " + name);
+			mStartTracking.setEnabled(true);
+			mStopTracking.setEnabled(false);
+		}
 	}
 
 	// Helper methods

@@ -13,6 +13,9 @@ public final class GPSTrackerUtils {
 
 	public static final int SMALLEST_DISPLACEMENT_METER = 10;
 
+	public static final String BROADCAST_ACTION = "ru.idesade.gpstracker.updateTrack";
+	public static final String PARAM_TRACK = "Track";
+
 	public static File getGPSTrackerDir(Context context) {
 //		File dir = context.getFilesDir();
 		File dir = new File(Environment.getExternalStorageDirectory() + "/GPSTracker");

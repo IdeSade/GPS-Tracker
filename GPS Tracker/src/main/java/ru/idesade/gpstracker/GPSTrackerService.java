@@ -3,6 +3,7 @@ package ru.idesade.gpstracker;
 import android.app.Service;
 import android.content.Intent;
 import android.location.Location;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -68,7 +69,7 @@ public class GPSTrackerService extends Service implements
 	@Override
 	public IBinder onBind(final Intent intent) {
 		Log.d(TAG, "onBind()");
-		return null;
+		return new Binder();
 	}
 
 	// LocationListener
@@ -77,6 +78,9 @@ public class GPSTrackerService extends Service implements
 	public void onLocationChanged(final Location location) {
 		if (mTrack != null) {
 			mTrack.addLocation(location);
+			Intent intent = new Intent(GPSTrackerUtils.BROADCAST_ACTION);
+			intent.putExtra(GPSTrackerUtils.PARAM_TRACK, mTrack);
+			sendBroadcast(intent);
 		}
 	}
 

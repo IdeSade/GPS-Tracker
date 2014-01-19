@@ -2,6 +2,8 @@ package ru.idesade.gpstracker;
 
 import android.content.Context;
 import android.location.Location;
+import android.os.Parcel;
+import android.os.Parcelable;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -17,9 +19,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
-public class GPSTrack {
+public class GPSTrack implements Parcelable {
 
 	private static String LOCATION_PROVIDER			= "GPSTrack";
 
@@ -194,6 +197,8 @@ public class GPSTrack {
 		return fromJSONString(loadString);
 	}
 
+	// Helper methods
+
 	private File getFileByStartTime(Context context, long startTime) {
 		File dir = GPSTrackerUtils.getGPSTrackerDir(context);
 		return new File(dir, startTime + ".trc");
@@ -203,4 +208,39 @@ public class GPSTrack {
 		File dir = GPSTrackerUtils.getGPSTrackerDir(context);
 		return new File(dir, fileName);
 	}
+
+	// Parcelling part
+
+	public GPSTrack(Parcel in) {
+		StartTime = in.readLong();
+		FinishTime = in.readLong();
+		Location[] locations = (Location[]) in.readParcelableArray(Location.class.getClassLoader());
+		if (locations != null) {
+			Collections.addAll(LocationList, locations);
+		}
+	}
+
+	@Override
+	public int describeContents() {
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeLong(StartTime);
+		dest.writeLong(FinishTime);
+		dest.writeParcelableArray(LocationList.toArray(new Location[LocationList.size()]), 0);
+	}
+
+	public static final Creator<GPSTrack> CREATOR = new Creator<GPSTrack>() {
+		@Override
+		public GPSTrack createFromParcel(Parcel source) {
+			return new GPSTrack(source);
+		}
+
+		@Override
+		public GPSTrack[] newArray(int size) {
+			return new GPSTrack[size];
+		}
+	};
 }
